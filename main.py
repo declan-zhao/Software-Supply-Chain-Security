@@ -14,9 +14,13 @@ from merkle_proof import (
 REKOR_URL = "https://rekor.sigstore.dev/api/v1"
 
 
-def get_log_entry(log_index, debug=False):
+def _validate_log_index(log_index):
     if not isinstance(log_index, int) or log_index < 0:
         raise ValueError("log_index must be a non-negative integer.")
+
+
+def get_log_entry(log_index, debug=False):
+    _validate_log_index(log_index)
 
     url = f"{REKOR_URL}/log/entries"
     resp = requests.get(url, params={"logIndex": log_index})
@@ -33,11 +37,7 @@ def get_log_entry(log_index, debug=False):
     return data
 
 
-def get_verification_proof(log_index, debug=False):
-    if not isinstance(log_index, int) or log_index < 0:
-        raise ValueError("log_index must be a non-negative integer.")
-
-    log_entry = get_log_entry(log_index, debug)
+def get_verification_proof(log_entry):
     key = next(iter(log_entry))
     value = log_entry[key]
 
@@ -45,10 +45,11 @@ def get_verification_proof(log_index, debug=False):
 
 
 def inclusion(log_index, artifact_filepath, debug=False):
-    if not isinstance(log_index, int) or log_index < 0:
-        raise ValueError("log_index must be a non-negative integer.")
+    _validate_log_index(log_index)
 
-    if not os.path.exists(artifact_filepath) or not os.path.isfile(artifact_filepath):
+    if not os.path.exists(artifact_filepath) or not os.path.isfile(
+        artifact_filepath
+    ):
         raise FileNotFoundError("Artifact filepath invalid.")
 
     log_entry = get_log_entry(log_index, debug)
@@ -70,13 +71,15 @@ def inclusion(log_index, artifact_filepath, debug=False):
     verify_artifact_signature(decoded_signature, public_key, artifact_filepath)
 
     # inclusion verification
-    verification_proof = get_verification_proof(log_index, debug)
+    verification_proof = get_verification_proof(log_entry)
     index = verification_proof["logIndex"]
     tree_size = verification_proof["treeSize"]
     leaf_hash = compute_leaf_hash(body)
     hashes = verification_proof["hashes"]
     root_hash = verification_proof["rootHash"]
-    verify_inclusion(DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash)
+    verify_inclusion(
+        DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash
+    )
     print("Offline root hash calculation for inclusion verified.")
 
 
@@ -106,7 +109,12 @@ def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
 
     url = f"{REKOR_URL}/log/proof"
     resp = requests.get(
-        url, params={"firstSize": first_size, "lastSize": last_size, "treeID": tree_id}
+        url,
+        params={
+            "firstSize": first_size,
+            "lastSize": last_size,
+            "treeID": tree_id,
+        },
     )
     resp.raise_for_status()
     data = resp.json()
@@ -132,7 +140,9 @@ def consistency(prev_checkpoint, debug=False):
         or not prev_checkpoint_tree_size
         or not prev_checkpoint_root_hash
     ):
-        raise ValueError("Previous checkpoint is empty or missing required fields.")
+        raise ValueError(
+            "Previous checkpoint is empty or missing required fields."
+        )
 
     latest_checkpoint = get_latest_checkpoint(debug)
     if not latest_checkpoint:
@@ -199,7 +209,10 @@ def main():
         "--tree-id", help="Tree ID for consistency proof", required=False
     )
     parser.add_argument(
-        "--tree-size", help="Tree size for consistency proof", required=False, type=int
+        "--tree-size",
+        help="Tree size for consistency proof",
+        required=False,
+        type=int,
     )
     parser.add_argument(
         "--root-hash", help="Root hash for consistency proof", required=False
