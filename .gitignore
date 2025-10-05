@@ -244,3 +244,5 @@ Temporary Items
 
 # Assignment specific artifacts (ignore submitted / provided resources)
 Software Supply Chain Security - Assignment 1.pdf
+*.initial.txt
+*.final.txt
