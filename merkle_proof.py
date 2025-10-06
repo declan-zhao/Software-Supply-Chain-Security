@@ -7,13 +7,15 @@ Main components:
 - Hasher: Wrapper providing domain‑separated leaf and node hashing.
 - verify_consistency: Validates a consistency proof between two tree sizes.
 - verify_inclusion: Validates an inclusion proof for a leaf at a given index.
-- root_from_inclusion_proof: Reconstructs a Merkle root from a leaf and its proof.
-- compute_leaf_hash: Computes the RFC 6962 leaf hash from a base64-encoded log entry.
+- root_from_inclusion_proof: Reconstructs a Merkle root from
+    a leaf and its proof.
+- compute_leaf_hash: Computes the RFC 6962 leaf hash from a base64-encoded
+    log entry.
 
 Helper chaining functions (chain_inner, chain_inner_right, chain_border_right)
-compose partial proofs; decomp_incl_proof and inner_proof_size derive structural
-parameters. RootMismatchError is raised when a calculated root differs from an
-expected root.
+compose partial proofs; decomp_incl_proof and inner_proof_size derive
+structural parameters. RootMismatchError is raised when a calculated
+root differs from an expected root.
 
 All hashes use SHA-256 by default with explicit domain separation prefixes:
 0x00 for leaves and 0x01 for internal nodes.
@@ -31,9 +33,11 @@ RFC6962_NODE_HASH_PREFIX = 1
 class Hasher:
     """
     Hasher implements RFC 6962-style Merkle tree leaf and node hashing.
-    This utility wraps a configurable cryptographic hash constructor (default: hashlib.sha256)
+    This utility wraps a configurable cryptographic hash constructor
+        (default: hashlib.sha256)
     and provides helpers to:
-        - Produce an "empty" Merkle root (the digest of an untouched hash object).
+        - Produce an "empty" Merkle root (the digest of an untouched
+            hash object).
         - Hash a leaf value with the RFC 6962 leaf prefix (0x00).
         - Hash two child node digests with the RFC 6962 node prefix (0x01).
         - Query the underlying digest size.
@@ -43,14 +47,17 @@ class Hasher:
     Parameters
     ----------
     hash_func : Callable[[], 'hashlib._Hash'], optional
-            A zero-argument callable returning a new hash object supporting .update() and .digest().
-            Defaults to hashlib.sha256. Any hash function with the same interface may be supplied.
+            A zero-argument callable returning a new hash object supporting
+                .update() and .digest().
+            Defaults to hashlib.sha256. Any hash function with the same
+                interface may be supplied.
     Methods
     -------
     new() -> hashlib._Hash
             Return a fresh hash object from the configured hash constructor.
     empty_root() -> bytes
-            Return the digest of an untouched hash object (the canonical empty tree root).
+            Return the digest of an untouched hash object
+                (the canonical empty tree root).
     hash_leaf(leaf: bytes) -> bytes
             Compute the RFC 6962 leaf hash for the given raw leaf bytes.
     hash_children(left: bytes, right: bytes) -> bytes
@@ -66,9 +73,11 @@ class Hasher:
             digest_size = hasher.size()
     Notes
     -----
-    - The caller is responsible for ensuring that 'left' and 'right' in hash_children
+    - The caller is responsible for ensuring that 'left' and
+        'right' in hash_children
         are already valid digest-sized byte strings.
-    - This class does not perform tree management—only primitive hashing operations.
+    - This class does not perform tree management
+        only primitive hashing operations.
     """
 
     def __init__(self, hash_func=hashlib.sha256):
@@ -157,7 +166,7 @@ DefaultHasher = Hasher(hashlib.sha256)
 
 def verify_consistency(
     hasher, size1, size2, proof, root1, root2
-):  # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
+):  # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals # noqa: E501
     """Verify a Merkle tree consistency proof between two tree sizes.
 
     Validates that a tree of size ``size2`` is an append-only extension of a
