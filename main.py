@@ -16,6 +16,8 @@ import argparse
 import base64
 import json
 import os
+from typing import Any, Dict
+
 import requests
 from util import extract_public_key, verify_artifact_signature
 from merkle_proof import (
@@ -27,8 +29,11 @@ from merkle_proof import (
 
 REKOR_URL = "https://rekor.sigstore.dev/api/v1"
 
+# Simple JSON object alias for clarity
+JSONDict = Dict[str, Any]
 
-def _validate_log_index(log_index):
+
+def _validate_log_index(log_index: int) -> None:
     """Validate the log index.
 
     Args:
@@ -41,7 +46,7 @@ def _validate_log_index(log_index):
         raise ValueError("log_index must be a non-negative integer.")
 
 
-def get_log_entry(log_index, debug=False):
+def get_log_entry(log_index: int, debug: bool = False) -> JSONDict:
     """Retrieve a log entry from the Rekor API.
 
     Args:
@@ -72,7 +77,7 @@ def get_log_entry(log_index, debug=False):
     return data
 
 
-def get_verification_proof(log_entry):
+def get_verification_proof(log_entry: JSONDict) -> JSONDict:
     """Get the verification proof from a log entry.
 
     Args:
@@ -87,7 +92,11 @@ def get_verification_proof(log_entry):
     return value["verification"]["inclusionProof"]
 
 
-def inclusion(log_index, artifact_filepath, debug=False):
+def inclusion(
+    log_index: int,
+    artifact_filepath: str,
+    debug: bool = False,
+) -> None:
     """Verify the inclusion of an artifact in the transparency log.
 
     Args:
@@ -137,7 +146,7 @@ def inclusion(log_index, artifact_filepath, debug=False):
     print("Offline root hash calculation for inclusion verified.")
 
 
-def get_latest_checkpoint(debug=False):
+def get_latest_checkpoint(debug: bool = False) -> JSONDict:
     """Get the latest checkpoint from the Rekor API.
 
     Args:
@@ -165,7 +174,12 @@ def get_latest_checkpoint(debug=False):
     return data
 
 
-def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
+def get_consistency_proof_data(
+    first_size: int,
+    last_size: int,
+    tree_id: str,
+    debug: bool = False,
+) -> JSONDict:
     """Get the consistency proof data from the Rekor API.
 
     Args:
@@ -191,15 +205,12 @@ def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
         raise ValueError("tree_id must be a non-empty string.")
 
     url = f"{REKOR_URL}/log/proof"
-    resp = requests.get(
-        url,
-        params={
-            "firstSize": first_size,
-            "lastSize": last_size,
-            "treeID": tree_id,
-        },
-        timeout=10,
-    )
+    params: dict[str, int | str] = {
+        "firstSize": first_size,
+        "lastSize": last_size,
+        "treeID": tree_id,
+    }
+    resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
 
@@ -213,7 +224,7 @@ def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
     return data
 
 
-def consistency(prev_checkpoint, debug=False):
+def consistency(prev_checkpoint: JSONDict, debug: bool = False) -> None:
     """Verify the consistency of a previous
         checkpoint with the latest checkpoint.
 
@@ -226,19 +237,26 @@ def consistency(prev_checkpoint, debug=False):
         ValueError: If the previous checkpoint is invalid.
         ValueError: If the latest checkpoint is invalid.
     """
+    # Extract and validate previous checkpoint fields
     prev_checkpoint_tree_id = prev_checkpoint.get("treeID")
     prev_checkpoint_tree_size = prev_checkpoint.get("treeSize")
     prev_checkpoint_root_hash = prev_checkpoint.get("rootHash")
 
     if (
-        not prev_checkpoint
+        not isinstance(prev_checkpoint_tree_id, str)
         or not prev_checkpoint_tree_id
-        or not prev_checkpoint_tree_size
+    ):
+        raise ValueError("Previous checkpoint treeID missing or invalid.")
+    if (
+        not isinstance(prev_checkpoint_tree_size, int)
+        or prev_checkpoint_tree_size < 1
+    ):
+        raise ValueError("Previous checkpoint treeSize missing or invalid.")
+    if (
+        not isinstance(prev_checkpoint_root_hash, str)
         or not prev_checkpoint_root_hash
     ):
-        raise ValueError(
-            "Previous checkpoint is empty or missing required fields."
-        )
+        raise ValueError("Previous checkpoint rootHash missing or invalid.")
 
     latest_checkpoint = get_latest_checkpoint(debug)
     if not latest_checkpoint:
@@ -246,6 +264,17 @@ def consistency(prev_checkpoint, debug=False):
 
     latest_checkpoint_tree_size = latest_checkpoint.get("treeSize")
     latest_checkpoint_root_hash = latest_checkpoint.get("rootHash")
+
+    if (
+        not isinstance(latest_checkpoint_tree_size, int)
+        or latest_checkpoint_tree_size < 1
+    ):
+        raise ValueError("Latest checkpoint treeSize missing or invalid.")
+    if (
+        not isinstance(latest_checkpoint_root_hash, str)
+        or not latest_checkpoint_root_hash
+    ):
+        raise ValueError("Latest checkpoint rootHash missing or invalid.")
 
     consistency_proof = get_consistency_proof_data(
         prev_checkpoint_tree_size,
@@ -266,7 +295,7 @@ def consistency(prev_checkpoint, debug=False):
     print("Consistency verification successful.")
 
 
-def main():
+def main() -> None:
     """Main entry point for the Rekor Verifier."""
     debug = False
     parser = argparse.ArgumentParser(description="Rekor Verifier")
