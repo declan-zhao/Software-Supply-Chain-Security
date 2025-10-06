@@ -1,3 +1,17 @@
+"""
+Rekor Transparency Log verifier.
+
+CLI supports:
+- Fetch log entry by index
+- Verify artifact signature and Merkle inclusion
+- Fetch latest checkpoint
+- Verify Merkle consistency from prior checkpoint
+
+Uses local merkle_proof (hash & proof verification)
+and util (key extraction, signature check).
+Add --debug to persist JSON responses for inspection.
+"""
+
 import argparse
 import base64
 import json
@@ -15,15 +29,36 @@ REKOR_URL = "https://rekor.sigstore.dev/api/v1"
 
 
 def _validate_log_index(log_index):
+    """Validate the log index.
+
+    Args:
+        log_index (int): The log index to validate.
+
+    Raises:
+        ValueError: If log_index is not a non-negative integer.
+    """
     if not isinstance(log_index, int) or log_index < 0:
         raise ValueError("log_index must be a non-negative integer.")
 
 
 def get_log_entry(log_index, debug=False):
+    """Retrieve a log entry from the Rekor API.
+
+    Args:
+        log_index (int): The log index to retrieve.
+        debug (bool, optional): Whether to enable
+            debug mode. Defaults to False.
+
+    Raises:
+        ValueError: If data is not a dict.
+
+    Returns:
+        data (dict): The log entry.
+    """
     _validate_log_index(log_index)
 
     url = f"{REKOR_URL}/log/entries"
-    resp = requests.get(url, params={"logIndex": log_index})
+    resp = requests.get(url, params={"logIndex": log_index}, timeout=10)
     resp.raise_for_status()
     data = resp.json()
 
@@ -31,13 +66,21 @@ def get_log_entry(log_index, debug=False):
         raise ValueError("Unexpected response format for log entry.")
 
     if debug:
-        with open("log_entry.json", "w") as f:
+        with open("log_entry.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
     return data
 
 
 def get_verification_proof(log_entry):
+    """Get the verification proof from a log entry.
+
+    Args:
+        log_entry (dict): The log entry to extract the proof from.
+
+    Returns:
+        (dict) The verification proof.
+    """
     key = next(iter(log_entry))
     value = log_entry[key]
 
@@ -45,6 +88,17 @@ def get_verification_proof(log_entry):
 
 
 def inclusion(log_index, artifact_filepath, debug=False):
+    """Verify the inclusion of an artifact in the transparency log.
+
+    Args:
+        log_index (int): The log index of the artifact.
+        artifact_filepath (str): The file path to the artifact.
+        debug (bool, optional): Whether to enable
+            debug mode. Defaults to False.
+
+    Raises:
+        FileNotFoundError: If the artifact file is not found.
+    """
     _validate_log_index(log_index)
 
     if not os.path.exists(artifact_filepath) or not os.path.isfile(
@@ -72,20 +126,32 @@ def inclusion(log_index, artifact_filepath, debug=False):
 
     # inclusion verification
     verification_proof = get_verification_proof(log_entry)
-    index = verification_proof["logIndex"]
-    tree_size = verification_proof["treeSize"]
-    leaf_hash = compute_leaf_hash(body)
-    hashes = verification_proof["hashes"]
-    root_hash = verification_proof["rootHash"]
     verify_inclusion(
-        DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash
+        DefaultHasher,
+        verification_proof["logIndex"],
+        verification_proof["treeSize"],
+        compute_leaf_hash(body),
+        verification_proof["hashes"],
+        verification_proof["rootHash"],
     )
     print("Offline root hash calculation for inclusion verified.")
 
 
 def get_latest_checkpoint(debug=False):
+    """Get the latest checkpoint from the Rekor API.
+
+    Args:
+        debug (bool, optional): Whether to enable
+            debug mode. Defaults to False.
+
+    Raises:
+        ValueError: If the response format is unexpected.
+
+    Returns:
+        data (dict): The latest checkpoint data.
+    """
     url = f"{REKOR_URL}/log"
-    resp = requests.get(url)
+    resp = requests.get(url, timeout=10)
     resp.raise_for_status()
     data = resp.json()
 
@@ -93,13 +159,30 @@ def get_latest_checkpoint(debug=False):
         raise ValueError("Unexpected response format for checkpoint.")
 
     if debug:
-        with open("checkpoint.json", "w") as f:
+        with open("checkpoint.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
     return data
 
 
 def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
+    """Get the consistency proof data from the Rekor API.
+
+    Args:
+        first_size (int): The size of the first tree.
+        last_size (int): The size of the last tree.
+        tree_id (str): The tree ID.
+        debug (bool, optional): Whether to enable
+            debug mode. Defaults to False.
+
+    Raises:
+        ValueError: If the first_size is invalid.
+        ValueError: If the last_size is invalid.
+        ValueError: If the tree_id is invalid.
+
+    Returns:
+        data (dict): The consistency proof data.
+    """
     if not isinstance(first_size, int) or first_size < 1:
         raise ValueError("first_size must be a positive integer.")
     if not isinstance(last_size, int) or last_size < 1:
@@ -115,6 +198,7 @@ def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
             "lastSize": last_size,
             "treeID": tree_id,
         },
+        timeout=10,
     )
     resp.raise_for_status()
     data = resp.json()
@@ -123,13 +207,25 @@ def get_consistency_proof_data(first_size, last_size, tree_id, debug=False):
         raise ValueError("Unexpected response format for consistency proof.")
 
     if debug:
-        with open("consistency_proof.json", "w") as f:
+        with open("consistency_proof.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
     return data
 
 
 def consistency(prev_checkpoint, debug=False):
+    """Verify the consistency of a previous
+        checkpoint with the latest checkpoint.
+
+    Args:
+        prev_checkpoint (dict): The previous checkpoint data.
+        debug (bool, optional): Whether to enable
+            debug mode. Defaults to False.
+
+    Raises:
+        ValueError: If the previous checkpoint is invalid.
+        ValueError: If the latest checkpoint is invalid.
+    """
     prev_checkpoint_tree_id = prev_checkpoint.get("treeID")
     prev_checkpoint_tree_size = prev_checkpoint.get("treeSize")
     prev_checkpoint_root_hash = prev_checkpoint.get("rootHash")
@@ -171,6 +267,7 @@ def consistency(prev_checkpoint, debug=False):
 
 
 def main():
+    """Main entry point for the Rekor Verifier."""
     debug = False
     parser = argparse.ArgumentParser(description="Rekor Verifier")
     parser.add_argument(
