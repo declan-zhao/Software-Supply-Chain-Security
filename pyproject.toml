@@ -1,2 +1,27 @@
+[project]
+name = "software-supply-chain-security"
+version = "3.0.0"
+description = ""
+authors = [
+    {name = "Declan Zhao",email = "zydc2010@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mypy (>=1.18.2,<2.0.0)",
+    "black (>=25.9.0,<26.0.0)",
+    "flake8 (>=7.3.0,<8.0.0)",
+    "pylint (>=4.0.2,<5.0.0)",
+    "autodocstring (>=0.1.2,<0.2.0)",
+    "bandit (>=1.8.6,<2.0.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
 [tool.black]
 line-length = 79
