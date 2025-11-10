@@ -70,10 +70,6 @@ def get_log_entry(log_index: int, debug: bool = False) -> JSONDict:
     if not isinstance(data, dict) or not data:
         raise ValueError("Unexpected response format for log entry.")
 
-    if debug:
-        with open("log_entry.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-
     return data
 
 
@@ -167,10 +163,6 @@ def get_latest_checkpoint(debug: bool = False) -> JSONDict:
     if not isinstance(data, dict) or not data:
         raise ValueError("Unexpected response format for checkpoint.")
 
-    if debug:
-        with open("checkpoint.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-
     return data
 
 
@@ -216,10 +208,6 @@ def get_consistency_proof_data(
 
     if not isinstance(data, dict) or not data:
         raise ValueError("Unexpected response format for consistency proof.")
-
-    if debug:
-        with open("consistency_proof.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
 
     return data
 
