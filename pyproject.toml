@@ -13,7 +13,9 @@ dependencies = [
     "flake8 (>=7.3.0,<8.0.0)",
     "pylint (>=4.0.2,<5.0.0)",
     "autodocstring (>=0.1.2,<0.2.0)",
-    "bandit (>=1.8.6,<2.0.0)"
+    "bandit (>=1.8.6,<2.0.0)",
+    "pytest (>=9.0.0,<10.0.0)",
+    "pytest-cov (>=7.0.0,<8.0.0)"
 ]
 
 [build-system]
