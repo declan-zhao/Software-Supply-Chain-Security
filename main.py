@@ -230,39 +230,10 @@ def consistency(prev_checkpoint: JSONDict, debug: bool = False) -> None:
     prev_checkpoint_tree_size = prev_checkpoint.get("treeSize")
     prev_checkpoint_root_hash = prev_checkpoint.get("rootHash")
 
-    if (
-        not isinstance(prev_checkpoint_tree_id, str)
-        or not prev_checkpoint_tree_id
-    ):
-        raise ValueError("Previous checkpoint treeID missing or invalid.")
-    if (
-        not isinstance(prev_checkpoint_tree_size, int)
-        or prev_checkpoint_tree_size < 1
-    ):
-        raise ValueError("Previous checkpoint treeSize missing or invalid.")
-    if (
-        not isinstance(prev_checkpoint_root_hash, str)
-        or not prev_checkpoint_root_hash
-    ):
-        raise ValueError("Previous checkpoint rootHash missing or invalid.")
-
     latest_checkpoint = get_latest_checkpoint(debug)
-    if not latest_checkpoint:
-        raise ValueError("Latest checkpoint is empty.")
 
     latest_checkpoint_tree_size = latest_checkpoint.get("treeSize")
     latest_checkpoint_root_hash = latest_checkpoint.get("rootHash")
-
-    if (
-        not isinstance(latest_checkpoint_tree_size, int)
-        or latest_checkpoint_tree_size < 1
-    ):
-        raise ValueError("Latest checkpoint treeSize missing or invalid.")
-    if (
-        not isinstance(latest_checkpoint_root_hash, str)
-        or not latest_checkpoint_root_hash
-    ):
-        raise ValueError("Latest checkpoint rootHash missing or invalid.")
 
     consistency_proof = get_consistency_proof_data(
         prev_checkpoint_tree_size,
