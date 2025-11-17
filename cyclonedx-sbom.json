@@ -10,7 +10,7 @@
       "name": "dz-python-rekor-monitor",
       "type": "application"
     },
-    "timestamp": "2025-11-17T01:53:42.985385+00:00",
+    "timestamp": "2025-11-17T02:00:46.554125+00:00",
     "tools": {
       "components": [
         {
@@ -114,7 +114,7 @@
       ]
     }
   },
-  "serialNumber": "urn:uuid:aea1f60b-3aa5-44a5-bef6-1ef0cd41df75",
+  "serialNumber": "urn:uuid:a2c85253-4822-4a45-ab6b-08c2dd03a638",
   "version": 1,
   "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
   "bomFormat": "CycloneDX",
