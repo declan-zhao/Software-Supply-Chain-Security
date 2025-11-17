@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 
-from util import extract_public_key, verify_artifact_signature
+from src.util import extract_public_key, verify_artifact_signature
 
 
 class TestExtractPublicKey:

@@ -19,8 +19,8 @@ import os
 from typing import Any, Dict
 
 import requests
-from util import extract_public_key, verify_artifact_signature
-from merkle_proof import (
+from src.util import extract_public_key, verify_artifact_signature
+from src.merkle_proof import (
     DefaultHasher,
     verify_consistency,
     verify_inclusion,

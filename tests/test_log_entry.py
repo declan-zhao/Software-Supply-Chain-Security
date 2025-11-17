@@ -1,4 +1,4 @@
-from main import get_log_entry
+from src.main import get_log_entry
 from jsonschema import validate
 
 import pytest

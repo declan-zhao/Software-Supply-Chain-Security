@@ -1,4 +1,4 @@
-from main import get_latest_checkpoint
+from src.main import get_latest_checkpoint
 from jsonschema import validate
 
 import json
@@ -27,7 +27,7 @@ def test_cli_checkpoint():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "-c",
         ],
         capture_output=True,

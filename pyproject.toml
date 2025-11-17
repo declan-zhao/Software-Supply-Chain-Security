@@ -1,6 +1,6 @@
 [project]
-name = "software-supply-chain-security"
-version = "3.0.0"
+name = "dz-python-rekor-monitor"
+version = "4.0.1"
 description = ""
 authors = [
     {name = "Declan Zhao",email = "zydc2010@gmail.com"}
@@ -16,15 +16,21 @@ dependencies = [
     "bandit (>=1.8.6,<2.0.0)",
     "pytest (>=9.0.0,<10.0.0)",
     "pytest-cov (>=7.0.0,<8.0.0)",
-    "jsonschema (>=4.25.1,<5.0.0)"
+    "jsonschema (>=4.25.1,<5.0.0)",
+    "requests (>=2.32.5,<3)",
+    "cryptography (>=46.0.1,<47)"
 ]
+
+[project.scripts]
+dz-rekor-verify = "src.main:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-package-mode = false
+package-mode = true
+packages = [{include = "src"}]
 
 [tool.black]
 line-length = 79

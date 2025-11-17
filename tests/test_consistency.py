@@ -5,7 +5,7 @@ def test_consistency_no_treeID():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "--consistency",
         ],
         capture_output=True,
@@ -19,7 +19,7 @@ def test_consistency_no_treeSize():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "--consistency",
             "--tree-id",
             "1193050959916656506",
@@ -35,7 +35,7 @@ def test_consistency_no_rootHash():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "--consistency",
             "--tree-id",
             "1193050959916656506",

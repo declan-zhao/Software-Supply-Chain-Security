@@ -3,7 +3,7 @@
 import pytest
 import hashlib
 import base64
-from merkle_proof import (
+from src.merkle_proof import (
     Hasher,
     DefaultHasher,
     verify_consistency,

@@ -8,7 +8,7 @@ import os
 from unittest.mock import Mock, patch, mock_open, MagicMock
 import requests
 
-from main import (
+from src.main import (
     _validate_log_index,
     get_log_entry,
     get_verification_proof,
@@ -42,7 +42,7 @@ class TestValidateLogIndex:
 class TestGetLogEntry:
     """Test cases for get_log_entry function."""
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_log_entry_success(self, mock_get):
         """Test get_log_entry with successful API response."""
         mock_response = Mock()
@@ -67,7 +67,7 @@ class TestGetLogEntry:
         assert "abc123" in result
         mock_get.assert_called_once()
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_log_entry_invalid_index(self, mock_get):
         """Test get_log_entry with invalid index."""
         with pytest.raises(ValueError):
@@ -75,7 +75,7 @@ class TestGetLogEntry:
 
         mock_get.assert_not_called()
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_log_entry_invalid_response(self, mock_get):
         """Test get_log_entry with invalid response format."""
         mock_response = Mock()
@@ -86,7 +86,7 @@ class TestGetLogEntry:
         with pytest.raises(ValueError, match="Unexpected response format"):
             get_log_entry(0)
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_log_entry_empty_response(self, mock_get):
         """Test get_log_entry with empty response."""
         mock_response = Mock()
@@ -97,7 +97,7 @@ class TestGetLogEntry:
         with pytest.raises(ValueError, match="Unexpected response format"):
             get_log_entry(0)
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_log_entry_api_error(self, mock_get):
         """Test get_log_entry with API error."""
         mock_response = Mock()
@@ -155,16 +155,16 @@ class TestInclusion:
         with pytest.raises(FileNotFoundError, match="Artifact filepath invalid"):
             inclusion(0, "nonexistent_file.md")
 
-    @patch('main.get_log_entry')
-    @patch('main.extract_public_key')
-    @patch('main.verify_artifact_signature')
-    @patch('main.get_verification_proof')
-    @patch('main.verify_inclusion')
-    @patch('main.compute_leaf_hash')
-    @patch('main.os.path.exists')
-    @patch('main.os.path.isfile')
-    @patch('main.base64.b64decode')
-    @patch('main.json.loads')
+    @patch('src.main.get_log_entry')
+    @patch('src.main.extract_public_key')
+    @patch('src.main.verify_artifact_signature')
+    @patch('src.main.get_verification_proof')
+    @patch('src.main.verify_inclusion')
+    @patch('src.main.compute_leaf_hash')
+    @patch('src.main.os.path.exists')
+    @patch('src.main.os.path.isfile')
+    @patch('src.main.base64.b64decode')
+    @patch('src.main.json.loads')
     def test_inclusion_success(
         self,
         mock_json_loads,
@@ -247,7 +247,7 @@ class TestInclusion:
 class TestGetLatestCheckpoint:
     """Test cases for get_latest_checkpoint function."""
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_latest_checkpoint_success(self, mock_get):
         """Test get_latest_checkpoint with successful API response."""
         mock_response = Mock()
@@ -268,7 +268,7 @@ class TestGetLatestCheckpoint:
         assert "treeSize" in result
         mock_get.assert_called_once()
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_latest_checkpoint_invalid_response(self, mock_get):
         """Test get_latest_checkpoint with invalid response."""
         mock_response = Mock()
@@ -279,7 +279,7 @@ class TestGetLatestCheckpoint:
         with pytest.raises(ValueError, match="Unexpected response format"):
             get_latest_checkpoint()
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_latest_checkpoint_api_error(self, mock_get):
         """Test get_latest_checkpoint with API error."""
         mock_response = Mock()
@@ -293,7 +293,7 @@ class TestGetLatestCheckpoint:
 class TestGetConsistencyProofData:
     """Test cases for get_consistency_proof_data function."""
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_consistency_proof_data_success(self, mock_get):
         """Test get_consistency_proof_data with successful API response."""
         mock_response = Mock()
@@ -333,7 +333,7 @@ class TestGetConsistencyProofData:
         with pytest.raises(ValueError, match="tree_id must be a non-empty string"):
             get_consistency_proof_data(10, 20, None)
 
-    @patch('main.requests.get')
+    @patch('src.main.requests.get')
     def test_get_consistency_proof_data_invalid_response(self, mock_get):
         """Test get_consistency_proof_data with invalid response."""
         mock_response = Mock()
@@ -348,9 +348,9 @@ class TestGetConsistencyProofData:
 class TestConsistency:
     """Test cases for consistency function."""
 
-    @patch('main.get_latest_checkpoint')
-    @patch('main.get_consistency_proof_data')
-    @patch('main.verify_consistency')
+    @patch('src.main.get_latest_checkpoint')
+    @patch('src.main.get_consistency_proof_data')
+    @patch('src.main.verify_consistency')
     def test_consistency_success(
         self,
         mock_verify_consistency,
@@ -379,9 +379,9 @@ class TestConsistency:
         mock_get_consistency_proof.assert_called_once_with(10, 20, "123", False)
         mock_verify_consistency.assert_called_once()
 
-    @patch('main.get_latest_checkpoint')
-    @patch('main.get_consistency_proof_data')
-    @patch('main.verify_consistency')
+    @patch('src.main.get_latest_checkpoint')
+    @patch('src.main.get_consistency_proof_data')
+    @patch('src.main.verify_consistency')
     def test_consistency_with_debug(
         self,
         mock_verify_consistency,
@@ -408,7 +408,7 @@ class TestConsistency:
 
         mock_get_consistency_proof.assert_called_once_with(10, 20, "123", True)
 
-    @patch('main.get_latest_checkpoint')
+    @patch('src.main.get_latest_checkpoint')
     def test_consistency_missing_tree_id(self, mock_get_latest_checkpoint):
         """Test consistency with missing treeID in checkpoint."""
         prev_checkpoint = {
@@ -423,7 +423,7 @@ class TestConsistency:
 
         # Should work but treeID will be None
         # This might cause issues in get_consistency_proof_data
-        with patch('main.get_consistency_proof_data') as mock_get_proof:
+        with patch('src.main.get_consistency_proof_data') as mock_get_proof:
             mock_get_proof.side_effect = ValueError("tree_id must be a non-empty string")
             with pytest.raises(ValueError):
                 consistency(prev_checkpoint)

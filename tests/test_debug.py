@@ -5,7 +5,7 @@ def test_debug_mode():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "--debug",
         ],
         capture_output=True,

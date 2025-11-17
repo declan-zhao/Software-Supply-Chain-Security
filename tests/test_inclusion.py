@@ -1,4 +1,4 @@
-from main import inclusion
+from src.main import inclusion
 
 import subprocess
 import os
@@ -12,7 +12,7 @@ def test_valid_inclusion():
     result = subprocess.run(
         [
             "python",
-            "main.py",
+            "src/main.py",
             "--inclusion",
             str(logIndex),
             "--artifact",

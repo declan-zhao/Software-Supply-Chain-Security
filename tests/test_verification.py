@@ -1,4 +1,4 @@
-from main import get_log_entry, get_verification_proof
+from src.main import get_log_entry, get_verification_proof
 from jsonschema import validate
 
 
