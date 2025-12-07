@@ -2,6 +2,7 @@ from src.main import get_latest_checkpoint
 from jsonschema import validate
 
 import json
+import os
 import subprocess
 
 checkpoint_schema = {
@@ -27,11 +28,13 @@ def test_cli_checkpoint():
     result = subprocess.run(
         [
             "python",
-            "src/main.py",
+            "-m",
+            "src.main",
             "-c",
         ],
         capture_output=True,
         text=True,
+        env={**os.environ, "PYTHONPATH": "."},
     )
     output = result.stdout
     data = json.loads(output)

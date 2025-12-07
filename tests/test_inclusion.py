@@ -12,7 +12,8 @@ def test_valid_inclusion():
     result = subprocess.run(
         [
             "python",
-            "src/main.py",
+            "-m",
+            "src.main",
             "--inclusion",
             str(logIndex),
             "--artifact",
@@ -20,6 +21,7 @@ def test_valid_inclusion():
         ],
         capture_output=True,
         text=True,
+        env={**os.environ, "PYTHONPATH": "."},
     )
 
     assert (

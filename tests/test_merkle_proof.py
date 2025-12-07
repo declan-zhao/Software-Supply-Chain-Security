@@ -123,7 +123,7 @@ class TestComputeLeafHash:
     def test_compute_leaf_hash_valid(self):
         """Test compute_leaf_hash with valid base64 input."""
         test_data = b"test data"
-        base64_data = base64.b64encode(test_data).decode('utf-8')
+        base64_data = base64.b64encode(test_data).decode("utf-8")
 
         leaf_hash = compute_leaf_hash(base64_data)
 
@@ -139,7 +139,7 @@ class TestComputeLeafHash:
 
     def test_compute_leaf_hash_empty(self):
         """Test compute_leaf_hash with empty input."""
-        base64_data = base64.b64encode(b"").decode('utf-8')
+        base64_data = base64.b64encode(b"").decode("utf-8")
         leaf_hash = compute_leaf_hash(base64_data)
 
         expected = hashlib.sha256()
@@ -151,7 +151,7 @@ class TestComputeLeafHash:
     def test_compute_leaf_hash_deterministic(self):
         """Test that compute_leaf_hash is deterministic."""
         test_data = b"test data"
-        base64_data = base64.b64encode(test_data).decode('utf-8')
+        base64_data = base64.b64encode(test_data).decode("utf-8")
 
         hash1 = compute_leaf_hash(base64_data)
         hash2 = compute_leaf_hash(base64_data)
@@ -417,7 +417,9 @@ class TestVerifyInclusion:
         proof = []
         root = hasher.hash_leaf(b"test").hex()
 
-        verify_inclusion(hasher, index, size, leaf_hash, proof, root, debug=True)
+        verify_inclusion(
+            hasher, index, size, leaf_hash, proof, root, debug=True
+        )
 
         captured = capsys.readouterr()
         assert "Calculated root hash" in captured.out
@@ -446,7 +448,9 @@ class TestVerifyConsistency:
         proof = ["abcdef"]
         root = hasher.hash_leaf(b"test").hex()
 
-        with pytest.raises(ValueError, match="size1=size2, but bytearray_proof is not empty"):
+        with pytest.raises(
+            ValueError, match="size1=size2, but bytearray_proof is not empty"
+        ):
             verify_consistency(hasher, size1, size2, proof, root, root)
 
     def test_verify_consistency_size2_less_than_size1(self):
@@ -509,4 +513,3 @@ class TestVerifyConsistency:
         # This may raise ValueError or RootMismatchError depending on the proof
         with pytest.raises((ValueError, RootMismatchError)):
             verify_consistency(hasher, size1, size2, proof, root1, root2)
-

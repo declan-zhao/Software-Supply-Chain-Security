@@ -19,23 +19,30 @@ class TestExtractPublicKey:
     def test_extract_public_key_valid_cert(self):
         """Test extracting public key from a valid PEM certificate."""
         # Generate a test certificate
-        private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+        private_key = ec.generate_private_key(
+            ec.SECP256R1(), default_backend()
+        )
         public_key = private_key.public_key()
 
         # Create a self-signed certificate
-        cert = x509.CertificateBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "US")])
-        ).issuer_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "US")])
-        ).public_key(
-            public_key
-        ).serial_number(
-            x509.random_serial_number()
-        ).not_valid_before(
-            datetime.now(UTC)
-        ).not_valid_after(
-            datetime.now(UTC) + timedelta(days=365)
-        ).sign(private_key, hashes.SHA256(), default_backend())
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name(
+                    [x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "US")]
+                )
+            )
+            .issuer_name(
+                x509.Name(
+                    [x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "US")]
+                )
+            )
+            .public_key(public_key)
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.now(UTC))
+            .not_valid_after(datetime.now(UTC) + timedelta(days=365))
+            .sign(private_key, hashes.SHA256(), default_backend())
+        )
 
         cert_pem = cert.public_bytes(serialization.Encoding.PEM)
 
@@ -70,7 +77,9 @@ class TestVerifyArtifactSignature:
     def test_verify_artifact_signature_valid(self):
         """Test verifying a valid signature."""
         # Generate a key pair
-        private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+        private_key = ec.generate_private_key(
+            ec.SECP256R1(), default_backend()
+        )
         public_key = private_key.public_key()
 
         # Serialize public key to PEM
@@ -85,7 +94,7 @@ class TestVerifyArtifactSignature:
         signature = private_key.sign(test_data, ec.ECDSA(hashes.SHA256()))
 
         # Write test data to a temporary file
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as f:
             f.write(test_data)
             temp_file = f.name
 
@@ -161,7 +170,9 @@ class TestVerifyArtifactSignature:
     def test_verify_artifact_signature_file_not_found(self):
         """Test verifying signature when file doesn't exist."""
         # Generate a key pair
-        private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+        private_key = ec.generate_private_key(
+            ec.SECP256R1(), default_backend()
+        )
         public_key = private_key.public_key()
 
         # Serialize public key to PEM
@@ -181,7 +192,7 @@ class TestVerifyArtifactSignature:
         test_data = b"Hello, World!"
 
         # Write test data to a temporary file
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as f:
             f.write(test_data)
             temp_file = f.name
 
@@ -189,8 +200,11 @@ class TestVerifyArtifactSignature:
             invalid_public_key = b"-----BEGIN PUBLIC KEY-----\ninvalid\n-----END PUBLIC KEY-----"
             signature = b"fake signature"
 
-            with pytest.raises(Exception):  # Should raise ValueError or similar
-                verify_artifact_signature(signature, invalid_public_key, temp_file)
+            with pytest.raises(
+                Exception
+            ):  # Should raise ValueError or similar
+                verify_artifact_signature(
+                    signature, invalid_public_key, temp_file
+                )
         finally:
             os.unlink(temp_file)
-
