@@ -1,0 +1,67 @@
+name: Continuous Deployment
+
+on:
+  push:
+    tags:
+      - "v*" # Trigger on versioned tags, e.g., v1.0.0
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Check out Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+
+      - name: Install Dependencies with Poetry
+        run: poetry install
+
+      - name: Build the Project
+        run: |
+          poetry build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Install CycloneDX
+        run: pip install cyclonedx-bom
+
+      - name: Generate SBOM
+        run: poetry run cyclonedx-py poetry -o sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v1
+        with:
+          subject-path: './dist/*.whl'
+          sbom-path: 'sbom.json'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
