@@ -1,5 +1,9 @@
 # Software Supply Chain Security - Rekor Transparency Log Verifier
 
+[![Continuous Deployment](https://github.com/declan-zhao/Software-Supply-Chain-Security/actions/workflows/cd.yml/badge.svg)](https://github.com/declan-zhao/Software-Supply-Chain-Security/actions/workflows/cd.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/declan-zhao/Software-Supply-Chain-Security/badge)](https://scorecard.dev/viewer/?uri=github.com/declan-zhao/Software-Supply-Chain-Security)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11575/badge)](https://www.bestpractices.dev/projects/11575)
+
 A Python CLI tool for verifying entries in the Rekor transparency log, implementing Merkle proof verification and artifact signature validation according to RFC 6962 (Certificate Transparency) standards.
 
 ## Project Description
